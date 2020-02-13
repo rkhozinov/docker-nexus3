@@ -30,6 +30,7 @@ ENV NEXUS_HOME=${SONATYPE_DIR}/nexus \
     NEXUS_CONTEXT='' \
     SONATYPE_WORK=${SONATYPE_DIR}/sonatype-work \
     DOCKER_TYPE='rh-docker'
+ENV NEXUS_PASSWORD=${NEXUS_PASSWORD:-password}
 
 ARG NEXUS_REPOSITORY_MANAGER_COOKBOOK_VERSION="release-0.5.20190212-155606.d1afdfe"
 ARG NEXUS_REPOSITORY_MANAGER_COOKBOOK_URL="https://github.com/sonatype/chef-nexus-repository-manager/releases/download/${NEXUS_REPOSITORY_MANAGER_COOKBOOK_VERSION}/chef-nexus-repository-manager.tar.gz"
@@ -51,11 +52,10 @@ RUN yum install -y --disableplugin=subscription-manager hostname procps \
     && rm -rf /var/chef \
     && yum clean all
 
-VOLUME ${NEXUS_DATA}
 
 EXPOSE 8081
 USER nexus
 
 ENV INSTALL4J_ADD_VM_PARAMS="-Xms1200m -Xmx1200m -XX:MaxDirectMemorySize=2g -Djava.util.prefs.userRoot=${NEXUS_DATA}/javaprefs"
 
-CMD ["sh", "-c", "${SONATYPE_DIR}/start-nexus-repository-manager.sh"]
+CMD ["sh", "-c", "echo ${NEXUS_PASSWORD} > /nexus-data/admin.password && ${SONATYPE_DIR}/start-nexus-repository-manager.sh"]

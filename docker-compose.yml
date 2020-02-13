@@ -1,12 +1,26 @@
-version: "2"
-
+version: '2.1'
 services:
-  nexus:
-    image: sonatype/nexus3
+  sidecar:
+    image: alpine:latest
+    command: 'cat /nexus-data/admin.password'
     volumes:
-      - "nexus-data:/nexus-data"
+      - nexus-data:/nexus-data
+
+  nexus:
+    build: .
+    volumes:
+      - nexus-data:/nexus-data
     ports:
-      - "8081:8081"
-  
+      - 8081:8081
+    environment:
+      - NEXUS_PASSWORD=password1
+    depends_on:
+      sidecar:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 volumes:
-  nexus-data: {}
+  nexus-data:
